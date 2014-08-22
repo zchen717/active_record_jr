@@ -10,7 +10,7 @@ class SQLObject
       SELECT
         *
       FROM
-        "#{self.table_name}"
+        #{self.table_name}
         
     SQL
     col = col.first
@@ -70,7 +70,19 @@ class SQLObject
   end
 
   def insert
+    col_names = self.class.columns
+    col_names = col_names.map(&:to_s)
+    col_names = col_names.join(", ")
+    question_marks = ( ["?"] * self.class.columns.length )
+    question_marks = question_marks.join(", ")
 
+    DBConnection.execute(<<-SQL, *attribute_values)
+    INSERT INTO 
+    #{self.class.table_name} (#{col_names})
+    VALUES
+    (#{question_marks})
+    SQL
+    self.id = DBConnection.last_insert_row_id
   end
 
   def initialize(params = {})
@@ -93,6 +105,6 @@ class SQLObject
   end
 
   def attribute_values
-    # ...
+    self.class.columns.map { |column_name| self.send(column_name) }
   end
 end
