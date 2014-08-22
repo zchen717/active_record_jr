@@ -97,7 +97,7 @@ class SQLObject
   end
 
   def save
-    # ...
+    id.nil? ? self.insert : self.update
   end
 
   def update
